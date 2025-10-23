@@ -6,6 +6,7 @@
     <title>Login de Acceso - Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+        // Configuración de Tailwind para colores personalizados y dark mode.
         tailwind.config = {
             darkMode: 'class', // Habilitar el modo oscuro basado en una clase en el HTML
             theme: {
@@ -35,14 +36,14 @@
         <div class="bg-secondary-dark dark:bg-light-card rounded-xl shadow-2xl p-8 sm:p-10 border border-gray-700 dark:border-gray-200 transition-colors duration-300">
             
         <div class="text-center mb-8">
-    <img src="./img/CristianLogin.png" 
-         alt="Logo del Sistema" 
-         class="mx-auto h-24 w-auto transition-colors duration-300">
-                
-    <h2 class="mt-4 text-3xl font-extrabold text-white dark:text-gray-900 transition-colors duration-300">
-        Acceder al Panel
-    </h2>
-</div>
+            <img src="./img/CristianLogin.png" 
+                 alt="Logo del Sistema" 
+                 class="mx-auto h-24 w-auto transition-colors duration-300">
+            
+            <h2 class="mt-4 text-3xl font-extrabold text-white dark:text-gray-900 transition-colors duration-300">
+                Acceder al Panel
+            </h2>
+        </div>
             
             <form id="login-form" class="space-y-6">
                 
@@ -87,6 +88,7 @@
         // --- 1. LÓGICA DE GESTIÓN DEL TEMA ---
 
         function applyTheme(theme) {
+            // Guardo la preferencia del usuario y aplico la clase 'dark' si es necesario.
             if (theme === 'dark') {
                 htmlElement.classList.add('dark');
                 localStorage.setItem('theme', 'dark');
@@ -97,6 +99,7 @@
         }
         
         document.addEventListener('DOMContentLoaded', () => {
+            // Al cargar, busco el tema guardado. Si existe y no es el valor por defecto, lo aplico.
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme && savedTheme !== 'dark') {
                 applyTheme(savedTheme);
@@ -104,6 +107,7 @@
         });
 
         toggleButton.addEventListener('click', () => {
+            // Alterno entre el tema oscuro y claro.
             const currentTheme = htmlElement.classList.contains('dark') ? 'dark' : 'light';
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             applyTheme(newTheme);
@@ -121,11 +125,12 @@
             
             if (username === CREDENCIAL && password === CREDENCIAL) {
                 
-                // ⭐ Guardar el nombre completo para el mensaje de bienvenida en index.html
+                // Guardo el nombre completo para el mensaje de bienvenida en el panel.
                 localStorage.setItem('userNombre', 'Ing. Cristian Diaz'); 
                 
-                // Redirige al index.html
-                window.location.replace("index.html"); 
+                // IMPORTANTE: Redirige al nuevo nombre del archivo del panel de control
+                // El antiguo index.html (el panel) ahora es contenido.html
+                window.location.replace("contenido.html"); 
             } else {
                 alert("Credenciales incorrectas. El usuario y la clave deben ser: " + CREDENCIAL);
             }
