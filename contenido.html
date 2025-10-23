@@ -339,241 +339,267 @@
             </div>
             
         </div>
-        <script>
-        
-        // --- 1. LÓGICA DE LOCALSTORAGE (Memoria del navegador) ---
-        
-        function getUsuarios() {
-            // Necesito obtener la lista de usuarios guardada. Si no existe, devuelvo un array vacío.
-            const usuarios = localStorage.getItem('usuarios');
-            return usuarios ? JSON.parse(usuarios) : [];
-        }
-
-        function saveUsuarios(usuarios) {
-            // Guardo la lista actualizada de vuelta en el navegador.
-            localStorage.setItem('usuarios', JSON.stringify(usuarios));
-        }
-        
-        // --- 2. LÓGICA DE VISTAS Y SIDEBAR ---
-
-        const menuItems = document.querySelectorAll('.menu-item');
-        const vistas = document.querySelectorAll('.vista-contenido');
-        const currentTitle = document.getElementById('current-title');
-        const tbodyListar = document.getElementById('tbody-listar');
-        const tbodyBuscar = document.getElementById('tbody-buscar');
-        const listarCount = document.getElementById('listar-count');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-
-
-        function showView(targetId) {
-            // Primero, oculto todas las vistas.
-            vistas.forEach(vista => vista.style.display = 'none');
-            const targetView = document.getElementById(targetId);
-            if (targetView) {
-                // Luego, muestro solo la vista que me interesa y actualizo el título.
-                targetView.style.display = 'block';
-                const menuItem = document.querySelector(`.menu-item[data-target="${targetId}"]`);
-                if (menuItem) {
-                    currentTitle.textContent = 'Vista Actual: ' + menuItem.textContent.trim().substring(3).trim();
-                }
-            }
+        <>
             
-            // Si estoy en móvil y hago clic en un menú, debería cerrarse la barra lateral automáticamente.
-            if (!sidebar.classList.contains('lg:translate-x-0') && sidebar.classList.contains('-translate-x-full')) {
-                 toggleSidebar(false);
-            }
-        }
-        
-        function toggleSidebar(show) {
-            // Esto controla si el sidebar entra o sale de la pantalla en móvil.
-            if (show) {
-                sidebar.classList.remove('-translate-x-full');
-                sidebar.classList.add('translate-x-0');
-                sidebarOverlay.style.display = 'block';
-            } else {
-                sidebar.classList.remove('translate-x-0');
-                sidebar.classList.add('-translate-x-full');
-                sidebarOverlay.style.display = 'none';
-            }
-        }
-        
+        // Función Anónima Autoejecutable (IIFE) para encapsular el código y evitar la contaminación del ámbito global.
+(function() {
 
-        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+    // --- 1. LÓGICA DE LOCALSTORAGE (Memoria del navegador) ---
+    // Uso de una constante para la clave de localStorage, mejorando la legibilidad.
+    const LS_KEY = 'usuarios';
+
+    function getUsuarios() {
+        // Necesito obtener la lista de usuarios guardada. Si no existe, devuelvo un array vacío.
+        const usuarios = localStorage.getItem(LS_KEY);
+        return usuarios ? JSON.parse(usuarios) : [];
+    }
+
+    function saveUsuarios(usuarios) {
+        // Guardo la lista actualizada de vuelta en el navegador.
+        localStorage.setItem(LS_KEY, JSON.stringify(usuarios));
+    }
+    
+    // --- 2. LÓGICA DE VISTAS Y SIDEBAR ---
+
+    // Obtención de elementos del DOM (se hará al inicio en DOMContentLoaded, pero los declaro aquí)
+    const menuItems = document.querySelectorAll('.menu-item');
+    const vistas = document.querySelectorAll('.vista-contenido');
+    const currentTitle = document.getElementById('current-title');
+    const tbodyListar = document.getElementById('tbody-listar');
+    const tbodyBuscar = document.getElementById('tbody-buscar');
+    const listarCount = document.getElementById('listar-count');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    // Nuevo elemento para el botón de toggle
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    // Nuevo elemento para el formulario de crear
+    const formCrearUsuario = document.getElementById('form-crear-usuario');
+    // Nuevo elemento para el formulario de buscar
+    const formBuscarUsuario = document.getElementById('form-buscar-usuario');
+    // Nuevo elemento para el enlace de logout
+    const logoutLink = document.getElementById('logout-link');
+
+
+    function showView(targetId) {
+        // Primero, oculto todas las vistas.
+        vistas.forEach(vista => vista.style.display = 'none');
+        const targetView = document.getElementById(targetId);
+        if (targetView) {
+            // Luego, muestro solo la vista que me interesa y actualizo el título.
+            targetView.style.display = 'block';
+            const menuItem = document.querySelector(`.menu-item[data-target="${targetId}"]`);
+            if (menuItem) {
+                // Se asegura de que el texto no contenga espacios extra.
+                currentTitle.textContent = 'Vista Actual: ' + menuItem.textContent.trim().substring(3).trim();
+            }
+        }
+        
+        // Si estoy en móvil y hago clic en un menú, debería cerrarse la barra lateral automáticamente.
+        // Se añade una comprobación para saber si el sidebar está abierto.
+        if (sidebar && sidebar.classList.contains('translate-x-0') && !sidebar.classList.contains('lg:translate-x-0')) {
+             toggleSidebar(false);
+        }
+    }
+    
+    function toggleSidebar(show) {
+        // Esto controla si el sidebar entra o sale de la pantalla en móvil.
+        if (!sidebar || !sidebarOverlay) return; // Validación de existencia
+        
+        if (show) {
+            sidebar.classList.remove('-translate-x-full');
+            sidebar.classList.add('translate-x-0');
+            sidebarOverlay.style.display = 'block';
+        } else {
+            sidebar.classList.remove('translate-x-0');
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.style.display = 'none';
+        }
+    }
+    
+
+    // --- 3. LÓGICA DE BIENVENIDA PERSONALIZADA ---
+    function displayWelcomeMessage() {
+        // Verifico si tengo el nombre del usuario logeado; si no, lo mando al login.
+        const greetingElement = document.getElementById('user-greeting');
+        const userName = localStorage.getItem('userNombre'); 
+        
+        if (userName && greetingElement) {
+            // Elimina "Ing. " y añade "Admin. "
+            greetingElement.textContent = `Admin. ${userName.replace("Ing. ", "").trim()}`; 
+        } else if (greetingElement) {
+            // ⭐ CAMBIO 1: Redirigir a "index.html" (el nuevo nombre del login)
+            window.location.replace("index.html"); 
+        }
+    }
+    
+    // --- 4. FUNCIÓN PARA ELIMINAR USUARIO ---
+    // Debe ser global para poder ser llamada desde el HTML generado dinámicamente.
+    window.deleteUser = function(userId) {
+        // Se asegura que el ID sea un número para la comparación.
+        const idToDelete = Number(userId);
+
+        // Primero, pido confirmación para evitar errores accidentales.
+        if (!confirm(`¿Estás seguro de que deseas eliminar el usuario con ID ${idToDelete}? Esta acción no se puede deshacer.`)) {
+            return;
+        }
+
+        let usuarios = getUsuarios();
+        // Filtro para quedarme con todos los usuarios EXCEPTO el que tiene el ID que quiero eliminar.
+        // Se asegura que el user.id sea también un número o string si se almacena como tal, 
+        // pero como se genera con Date.now(), es un número.
+        const nuevosUsuarios = usuarios.filter(user => user.id !== idToDelete);
+
+        if (nuevosUsuarios.length < usuarios.length) {
+            saveUsuarios(nuevosUsuarios);
+            alert(`✅ Usuario con ID ${idToDelete} eliminado correctamente.`);
+
+            // Las tablas deben reflejar el cambio inmediatamente.
+            renderizarTabla(nuevosUsuarios, tbodyListar);
+            
+            // También actualizo la tabla de búsqueda, manteniendo el filtro si lo había.
+            const currentSearchText = document.getElementById('search-text')?.value.toLowerCase() || "";
+            const criterio = document.getElementById('search-criterio')?.value;
+            
+            if (currentSearchText.trim() !== "") { 
+                // Re-aplico la lógica de búsqueda.
+                const resultados = nuevosUsuarios.filter(user => String(user[criterio]).toLowerCase().includes(currentSearchText));
+                renderizarTabla(resultados, tbodyBuscar);
+            } else {
+                // Si no había búsqueda activa, muestro todos los usuarios en la tabla de búsqueda también.
+                renderizarTabla(nuevosUsuarios, tbodyBuscar); 
+            }
+
+        } else {
+            alert(`❌ Error: No se encontró un usuario con ID ${idToDelete}.`);
+        }
+    }
+
+
+    // --- 5. FUNCIÓN PARA DIBUJAR LA TABLA (LISTAR Y BUSCAR) ---
+    
+    function renderizarTabla(usuarios, tbodyElement) {
+        // Vacío el cuerpo de la tabla para empezar desde cero.
+        if (!tbodyElement) return; // Salir si el elemento no existe
+
+        tbodyElement.innerHTML = ''; 
+        
+        if (usuarios.length === 0) {
+            // Si no hay datos, muestro un mensaje amigable.
+            const colSpan = 7; // El número de columnas de la tabla.
+            const row = tbodyElement.insertRow();
+            const cell = row.insertCell();
+            cell.colSpan = colSpan;
+            cell.classList.add('py-4', 'text-center', 'text-sm', 'text-gray-500', 'dark:text-gray-400', 'italic');
+            cell.textContent = "No se encontraron usuarios registrados.";
+            
+            // Actualizo el contador si es la tabla principal
+            if (tbodyElement.id === 'tbody-listar' && listarCount) {
+                listarCount.textContent = `Usuarios cargados: 0`;
+            }
+
+            return;
+        }
+
+        // Mapeo los datos a filas de la tabla
+        usuarios.forEach(user => {
+            const row = tbodyElement.insertRow();
+            row.classList.add('hover:bg-gray-50', 'dark:hover:bg-gray-700/70', 'transition-colors', 'duration-150');
+
+            // Array de propiedades y sus clases CSS
+            const cellData = [
+                { value: user.id, classes: ['px-6', 'py-3', 'text-sm', 'font-medium', 'text-gray-500', 'dark:text-gray-400'] },
+                { value: user.identificacion, classes: ['px-6', 'py-3', 'text-sm', 'font-medium', 'text-gray-900', 'dark:text-white'] },
+                { value: user.nombres, classes: ['px-6', 'py-3', 'text-sm', 'text-gray-600', 'dark:text-gray-300'] },
+                { value: user.apellidos, classes: ['px-6', 'py-3', 'text-sm', 'text-gray-600', 'dark:text-gray-300'] },
+                { value: user.fecha_nacimiento, classes: ['px-6', 'py-3', 'text-sm', 'text-gray-600', 'dark:text-gray-300'] },
+                { value: user.email, classes: ['px-6', 'py-3', 'text-sm', 'text-indigo-600', 'dark:text-indigo-400', 'truncate'] }
+            ];
+
+            cellData.forEach(data => {
+                let cell = row.insertCell();
+                cell.classList.add(...data.classes);
+                cell.textContent = data.value;
+            });
+
+            // Acciones (Botón Eliminar)
+            let cell = row.insertCell();
+            cell.classList.add('px-6', 'py-3', 'whitespace-nowrap', 'text-right', 'text-sm', 'font-medium');
+            
+            // Creo el botón de eliminar y le asigno la función deleteUser
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Eliminar';
+            deleteButton.classList.add('text-red-600', 'hover:text-red-900', 'dark:text-red-400', 'dark:hover:text-red-200', 'font-semibold', 'transition-colors', 'duration-150', 'p-2', 'rounded-md', 'hover:bg-red-50', 'dark:hover:bg-red-900/50');
+            // USO DE LA FUNCIÓN GLOBAL: window.deleteUser
+            deleteButton.onclick = () => window.deleteUser(user.id);
+            cell.appendChild(deleteButton);
+        });
+        
+        // Actualizo el contador si es la tabla principal
+        if (tbodyElement.id === 'tbody-listar' && listarCount) {
+            listarCount.textContent = `Usuarios cargados: ${usuarios.length}`;
+        }
+
+    }
+
+
+    // --- 6. ASIGNACIÓN DE LISTENERS AL CÓDIGO ---
+
+    // Listener para el menú de navegación
+    menuItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Desmarco todos los ítems y marco el activo
+            menuItems.forEach(i => i.classList.remove('bg-indigo-700', 'text-white'));
+            this.classList.add('bg-indigo-700', 'text-white');
+
+            const targetId = this.getAttribute('data-target');
+            showView(targetId);
+            
+            // Si la vista es 'vista-listar', fuerzo la actualización de la tabla.
+            if (targetId === 'vista-listar' && tbodyListar) {
+                renderizarTabla(getUsuarios(), tbodyListar);
+            }
+        });
+    });
+
+    // Listener para abrir/cerrar sidebar
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
             // Si el botón de menú es presionado, alterno el estado de la barra lateral.
             const isHidden = sidebar.classList.contains('-translate-x-full');
             toggleSidebar(isHidden);
         });
-
+    }
+    
+    // Listener para el overlay del sidebar
+    if (sidebarOverlay) {
         sidebarOverlay.addEventListener('click', () => {
              // Si el usuario toca el fondo oscuro (overlay), cierro el sidebar.
              toggleSidebar(false);
         });
+    }
 
-
-        // --- 3. LÓGICA DE BIENVENIDA PERSONALIZADA ---
-        function displayWelcomeMessage() {
-            // Verifico si tengo el nombre del usuario logeado; si no, lo mando al login.
-            const greetingElement = document.getElementById('user-greeting');
-            const userName = localStorage.getItem('userNombre'); 
-            
-            if (userName && greetingElement) {
-                greetingElement.textContent = `Admin. ${userName.replace("Ing. ", "")}`; 
-            } else if (greetingElement) {
-                // ⭐ CAMBIO 1: Redirigir a "index.html" (el nuevo nombre del login)
-                window.location.replace("index.html"); 
-            }
+    // Inicializo la primera vista y marco el primer ítem del menú.
+    document.addEventListener('DOMContentLoaded', () => {
+        const initialViewId = 'vista-crear'; // Vista inicial por defecto
+        showView(initialViewId); 
+        const firstMenuItem = document.querySelector(`.menu-item[data-target="${initialViewId}"]`);
+        if (firstMenuItem) {
+             firstMenuItem.classList.add('bg-indigo-700', 'text-white');
         }
+        // Muestro el mensaje de bienvenida y redirijo si no hay sesión.
+        displayWelcomeMessage(); 
         
-        // --- 4. FUNCIÓN PARA ELIMINAR USUARIO ---
-        function deleteUser(userId) {
-            // Primero, pido confirmación para evitar errores accidentales.
-            if (!confirm(`¿Estás seguro de que deseas eliminar el usuario con ID ${userId}? Esta acción no se puede deshacer.`)) {
-                return;
-            }
-
-            let usuarios = getUsuarios();
-            // Filtro para quedarme con todos los usuarios EXCEPTO el que tiene el ID que quiero eliminar.
-            const nuevosUsuarios = usuarios.filter(user => user.id !== userId);
-
-            if (nuevosUsuarios.length < usuarios.length) {
-                saveUsuarios(nuevosUsuarios);
-                alert(`Usuario con ID ${userId} eliminado correctamente.`);
-
-                // Las tablas deben reflejar el cambio inmediatamente.
-                renderizarTabla(nuevosUsuarios, tbodyListar);
-                
-                // También actualizo la tabla de búsqueda, manteniendo el filtro si lo había.
-                const currentSearchText = document.getElementById('search-text').value.toLowerCase();
-                const criterio = document.getElementById('search-criterio').value;
-                
-                if (currentSearchText) { 
-                    const resultados = nuevosUsuarios.filter(user => String(user[criterio]).toLowerCase().includes(currentSearchText));
-                    renderizarTabla(resultados, tbodyBuscar);
-                } else {
-                    renderizarTabla(nuevosUsuarios, tbodyBuscar); 
-                }
-
-            } else {
-                alert(`Error: No se encontró un usuario con ID ${userId}.`);
-            }
-        }
-
-
-        // --- 5. FUNCIÓN PARA DIBUJAR LA TABLA (LISTAR Y BUSCAR) ---
-        
-        function renderizarTabla(usuarios, tbodyElement) {
-            // Vacío el cuerpo de la tabla para empezar desde cero.
-            tbodyElement.innerHTML = ''; 
-            
-            if (usuarios.length === 0) {
-                // Si no hay datos, muestro un mensaje amigable.
-                const colSpan = 7; // El número de columnas de la tabla.
-                const row = tbodyElement.insertRow();
-                const cell = row.insertCell();
-                cell.colSpan = colSpan;
-                cell.classList.add('py-4', 'text-center', 'text-sm', 'text-gray-500', 'dark:text-gray-400', 'italic');
-                cell.textContent = "No se encontraron usuarios registrados.";
-                
-                // Actualizo el contador si es la tabla principal
-                if (tbodyElement.id === 'tbody-listar') {
-                    listarCount.textContent = `Usuarios cargados: 0`;
-                }
-
-                return;
-            }
-
-            // Mapeo los datos a filas de la tabla
-            usuarios.forEach(user => {
-                const row = tbodyElement.insertRow();
-                row.classList.add('hover:bg-gray-50', 'dark:hover:bg-gray-700/70', 'transition-colors', 'duration-150');
-
-                // ID Interno (Oculto o para referencia)
-                let cell = row.insertCell();
-                cell.classList.add('px-6', 'py-3', 'text-sm', 'font-medium', 'text-gray-500', 'dark:text-gray-400');
-                cell.textContent = user.id;
-
-                // Identificación
-                cell = row.insertCell();
-                cell.classList.add('px-6', 'py-3', 'text-sm', 'font-medium', 'text-gray-900', 'dark:text-white');
-                cell.textContent = user.identificacion;
-
-                // Nombres
-                cell = row.insertCell();
-                cell.classList.add('px-6', 'py-3', 'text-sm', 'text-gray-600', 'dark:text-gray-300');
-                cell.textContent = user.nombres;
-
-                // Apellidos
-                cell = row.insertCell();
-                cell.classList.add('px-6', 'py-3', 'text-sm', 'text-gray-600', 'dark:text-gray-300');
-                cell.textContent = user.apellidos;
-
-                // Fecha de Nacimiento
-                cell = row.insertCell();
-                cell.classList.add('px-6', 'py-3', 'text-sm', 'text-gray-600', 'dark:text-gray-300');
-                cell.textContent = user.fecha_nacimiento; 
-
-                // Email
-                cell = row.insertCell();
-                cell.classList.add('px-6', 'py-3', 'text-sm', 'text-indigo-600', 'dark:text-indigo-400', 'truncate');
-                cell.textContent = user.email;
-
-                // Acciones (Botón Eliminar)
-                cell = row.insertCell();
-                cell.classList.add('px-6', 'py-3', 'whitespace-nowrap', 'text-right', 'text-sm', 'font-medium');
-                
-                // Creo el botón de eliminar y le asigno la función deleteUser
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Eliminar';
-                deleteButton.classList.add('text-red-600', 'hover:text-red-900', 'dark:text-red-400', 'dark:hover:text-red-200', 'font-semibold', 'transition-colors', 'duration-150', 'p-2', 'rounded-md', 'hover:bg-red-50', 'dark:hover:bg-red-900/50');
-                deleteButton.onclick = () => deleteUser(user.id);
-                cell.appendChild(deleteButton);
-            });
-            
-            // Actualizo el contador si es la tabla principal
-            if (tbodyElement.id === 'tbody-listar') {
-                listarCount.textContent = `Usuarios cargados: ${usuarios.length}`;
-            }
-
-        }
-
-
-        // --- 6. ASIGNACIÓN DE LISTENERS AL CÓDIGO ---
-
-        menuItems.forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                // Desmarco todos los ítems y marco el activo
-                menuItems.forEach(i => i.classList.remove('bg-indigo-700', 'text-white'));
-                this.classList.add('bg-indigo-700', 'text-white');
-
-                const targetId = this.getAttribute('data-target');
-                showView(targetId);
-                
-                // Si la vista es 'vista-listar', fuerzo la actualización de la tabla.
-                if (targetId === 'vista-listar') {
-                    renderizarTabla(getUsuarios(), tbodyListar);
-                }
-            });
-        });
-
-        // Inicializo la primera vista y marco el primer ítem del menú.
-        document.addEventListener('DOMContentLoaded', () => {
-            const initialViewId = 'vista-crear'; // Vista inicial por defecto
-            showView(initialViewId); 
-            const firstMenuItem = document.querySelector(`.menu-item[data-target="${initialViewId}"]`);
-            if (firstMenuItem) {
-                 firstMenuItem.classList.add('bg-indigo-700', 'text-white');
-            }
-            // Muestro el mensaje de bienvenida y redirijo si no hay sesión.
-            displayWelcomeMessage(); 
-            
-            // Inicializo la tabla listar al cargar por primera vez
+        // Inicializo la tabla listar al cargar por primera vez
+        // Se asegura que tbodyListar exista antes de intentar renderizar
+        if (tbodyListar) {
             renderizarTabla(getUsuarios(), tbodyListar);
-        });
+        }
+    });
 
-        // --- 7. LÓGICA DE CREAR USUARIO ---
-        document.getElementById('form-crear-usuario').addEventListener('submit', function(e) {
+    // --- 7. LÓGICA DE CREAR USUARIO ---
+    if (formCrearUsuario) {
+        formCrearUsuario.addEventListener('submit', function(e) {
             e.preventDefault();
             
             // Genero un ID único (podría ser un timestamp o un hash)
@@ -582,13 +608,19 @@
             // Construyo el objeto del nuevo usuario
             const newUser = {
                 id: newId, // Lo uso como ID interno para operaciones de eliminación.
-                identificacion: document.getElementById('id_c').value,
-                nombres: document.getElementById('nombres_c').value,
-                apellidos: document.getElementById('apellidos_c').value,
-                fecha_nacimiento: document.getElementById('fecha_nacimiento_c').value,
-                genero: document.getElementById('genero_c').value,
-                email: document.getElementById('email_c').value,
+                identificacion: document.getElementById('id_c').value.trim(),
+                nombres: document.getElementById('nombres_c').value.trim(),
+                apellidos: document.getElementById('apellidos_c').value.trim(),
+                fecha_nacimiento: document.getElementById('fecha_nacimiento_c').value.trim(),
+                genero: document.getElementById('genero_c').value.trim(),
+                email: document.getElementById('email_c').value.trim(),
             };
+
+            // Validación básica para evitar guardar campos vacíos cruciales
+            if (!newUser.identificacion || !newUser.nombres || !newUser.apellidos || !newUser.email) {
+                 alert('Por favor, rellena todos los campos obligatorios (Identificación, Nombres, Apellidos, Email).');
+                 return;
+            }
 
             // Obtengo la lista actual, agrego el nuevo usuario y guardo.
             let usuarios = getUsuarios();
@@ -602,7 +634,9 @@
             
             // Opcional: Redirigir a la vista de Listado de Usuarios
             showView('vista-listar');
-            renderizarTabla(getUsuarios(), tbodyListar);
+            if (tbodyListar) {
+                renderizarTabla(getUsuarios(), tbodyListar);
+            }
             
             // Desmarco el menú de Crear y marco el de Listar
             menuItems.forEach(i => i.classList.remove('bg-indigo-700', 'text-white'));
@@ -611,43 +645,50 @@
                 listarMenuItem.classList.add('bg-indigo-700', 'text-white');
             }
         });
-        
-        // --- 8. LÓGICA DE CERRAR SESIÓN ---
-        const logoutLink = document.getElementById('logout-link');
-        if (logoutLink) {
-            // Limpio la variable de sesión y redirijo al nuevo archivo de inicio.
-            logoutLink.addEventListener('click', (e) => {
-                e.preventDefault(); 
-                localStorage.removeItem('userNombre'); 
-                // ⭐ CAMBIO 2: Redirigir a "index.html" (el nuevo nombre del login)
-                window.location.replace("index.html");
-            });
-        }
-        
-        // --- 9. LÓGICA DE BUSCAR USUARIO ---
-        document.getElementById('form-buscar-usuario').addEventListener('submit', function(e) {
+    }
+    
+    // --- 8. LÓGICA DE CERRAR SESIÓN ---
+    if (logoutLink) {
+        // Limpio la variable de sesión y redirijo al nuevo archivo de inicio.
+        logoutLink.addEventListener('click', (e) => {
+            e.preventDefault(); 
+            localStorage.removeItem('userNombre'); 
+            // ⭐ CAMBIO 2: Redirigir a "index.html" (el nuevo nombre del login)
+            window.location.replace("index.html");
+        });
+    }
+    
+    // --- 9. LÓGICA DE BUSCAR USUARIO ---
+    if (formBuscarUsuario) {
+        formBuscarUsuario.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const searchText = document.getElementById('search-text').value.toLowerCase();
-            const criterio = document.getElementById('search-criterio').value;
+            const searchText = document.getElementById('search-text')?.value.toLowerCase() || "";
+            const criterio = document.getElementById('search-criterio')?.value;
             const usuarios = getUsuarios();
             
             // Si el campo de búsqueda está vacío, simplemente muestro todos los usuarios en la tabla de búsqueda.
             if (searchText.trim() === "") {
-                renderizarTabla(usuarios, tbodyBuscar);
+                if (tbodyBuscar) renderizarTabla(usuarios, tbodyBuscar);
                 return;
             }
 
             // Realizo el filtrado: comparo el valor del criterio seleccionado (identificacion, nombres, etc.) con el texto de búsqueda.
             const resultados = usuarios.filter(user => 
-                String(user[criterio]).toLowerCase().includes(searchText)
+                String(user[criterio] || "").toLowerCase().includes(searchText)
             );
 
             // Muestro los resultados en la tabla de la vista "vista-buscar"
-            renderizarTabla(resultados, tbodyBuscar);
+            if (tbodyBuscar) renderizarTabla(resultados, tbodyBuscar);
         });
+    }
 
-    </script>
+})(); // Fin del IIFE
+
+          
+
+</script>
 </body>
 </html>
+
 
