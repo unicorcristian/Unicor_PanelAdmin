@@ -1,7 +1,0 @@
-
-Buenas, saludos ingeniero.
-
-Favor abrir inicialmente el <login.html> ya que seria un control sencillo de acceso al panel Admin.
-
-el usuario y contraseña son: cristian2025 , asi mismo encontrará que le agregue la opcion de cambiar tema oscuro o claro dicho login de acceso.
-
