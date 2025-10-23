@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login de Acceso - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Habilitar el modo oscuro basado en una clase en el HTML
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-dark': '#111827', // Gray-900 oscuro
+                        'secondary-dark': '#1F2937', // Gray-800
+                        'accent': '#4F46E5', // Indigo-600
+                        'light-bg': '#F3F4F6', // Gray-100 para el modo día
+                        'light-card': '#FFFFFF', // Blanco para el modo día
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-900 dark:bg-gray-100 min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
+    
+    <div class="w-full max-w-md relative">
+        
+        <button id="theme-toggle" aria-label="Cambiar tema"
+                class="absolute -top-12 right-0 p-2 text-gray-400 dark:text-gray-600 hover:text-accent dark:hover:text-accent focus:outline-none transition duration-150">
+            <svg id="moon-icon" class="w-6 h-6 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            <svg id="sun-icon" class="w-6 h-6 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+        </button>
+        
+        <div class="bg-secondary-dark dark:bg-light-card rounded-xl shadow-2xl p-8 sm:p-10 border border-gray-700 dark:border-gray-200 transition-colors duration-300">
+            
+        <div class="text-center mb-8">
+    <img src="./img/CristianLogin.png" 
+         alt="Logo del Sistema" 
+         class="mx-auto h-24 w-auto transition-colors duration-300">
+                
+    <h2 class="mt-4 text-3xl font-extrabold text-white dark:text-gray-900 transition-colors duration-300">
+        Acceder al Panel
+    </h2>
+</div>
+            
+            <form id="login-form" class="space-y-6">
+                
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-300 dark:text-gray-700 mb-1 transition-colors duration-300">Usuario</label>
+                    <input id="username" name="username" type="text" autocomplete="username" required
+                           placeholder="Ingresa cristian2025"
+                           class="w-full px-4 py-2 bg-primary-dark dark:bg-light-bg border border-gray-600 dark:border-gray-300 rounded-lg text-white dark:text-gray-900 placeholder-gray-500 dark:placeholder-gray-400
+                                 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition duration-150">
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-300 dark:text-gray-700 mb-1 transition-colors duration-300">Contraseña</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required
+                           placeholder="Ingresa cristian2025"
+                           class="w-full px-4 py-2 bg-primary-dark dark:bg-light-bg border border-gray-600 dark:border-gray-300 rounded-lg text-white dark:text-gray-900 placeholder-gray-500 dark:placeholder-gray-400
+                                 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition duration-150">
+                </div>
+                
+                <div>
+                    <button type="submit"
+                             class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg 
+                                    shadow-sm text-lg font-medium text-white bg-accent hover:bg-indigo-700 
+                                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent 
+                                    transition duration-150 transform hover:scale-[1.01] focus:scale-[1.01]">
+                        Acceder
+                    </button>
+                </div>
+            </form>
+            
+            <div class="mt-6 text-center text-sm font-semibold text-gray-400 dark:text-gray-600">
+                Usuario y Clave: <span class="font-bold text-white dark:text-gray-800">cristian2025</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        
+        const htmlElement = document.documentElement;
+        const toggleButton = document.getElementById('theme-toggle');
+
+        // --- 1. LÓGICA DE GESTIÓN DEL TEMA ---
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                htmlElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                htmlElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme && savedTheme !== 'dark') {
+                applyTheme(savedTheme);
+            }
+        });
+
+        toggleButton.addEventListener('click', () => {
+            const currentTheme = htmlElement.classList.contains('dark') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+        });
+        
+        // --- 2. LÓGICA DE VALIDACIÓN DEL LOGIN Y GUARDADO DE NOMBRE ---
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            const CREDENCIAL = 'cristian2025'; 
+            
+            if (username === CREDENCIAL && password === CREDENCIAL) {
+                
+                // ⭐ Guardar el nombre completo para el mensaje de bienvenida en index.html
+                localStorage.setItem('userNombre', 'Ing. Cristian Diaz'); 
+                
+                // Redirige al index.html
+                window.location.replace("index.html"); 
+            } else {
+                alert("Credenciales incorrectas. El usuario y la clave deben ser: " + CREDENCIAL);
+            }
+        });
+    </script>
+</body>
+</html>
